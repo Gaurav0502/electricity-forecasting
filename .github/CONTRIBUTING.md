@@ -18,6 +18,8 @@ df = preprocess.preprocess("precipitation")
 ```
 Any other input to the function will result in ValueError!
 
+- If you use any new module from Python to do your work, please add it inside requirements.txt.
+
 # Guidelines for pull request
 Before making a pull request, ensure the following requirements are fulfilled:
 
