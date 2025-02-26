@@ -1,0 +1,13 @@
+# main project modules
+pandas
+numpy
+matplotlib
+seaborn
+scipy
+datetime
+warnings
+
+# for virtual environment
+virtualenv
+jupyter
+ipykernel
