@@ -4,8 +4,8 @@ numpy
 matplotlib
 seaborn
 scipy
-datetime
-warnings
+sktime
+tslearn
 
 # for virtual environment
 virtualenv
