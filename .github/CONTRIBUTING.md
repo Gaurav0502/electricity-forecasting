@@ -12,7 +12,13 @@ git checkout <branch-name>
 ```py
 import preprocess # will create a folder __pycache__ (ignored by git)
 
+# for EDA
 df = preprocess.preprocess("electricity")
+
+# for modelling 
+# (set as_numpy = True if model needs numpy arrays as input)
+# (otherwise dataframe will returned)
+df = preprocess.preprocess_modelling(as_numpy = False)
 df = preprocess.preprocess("temperature")
 df = preprocess.preprocess("precipitation")
 ```
