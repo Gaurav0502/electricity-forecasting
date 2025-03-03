@@ -55,3 +55,38 @@ def preprocess(dataset_name: str):
         return preprocess_weather(dataset_name)
     
     return df
+
+def preprocess_modelling(as_numpy : bool):
+
+    # reading the dataset
+    electricity = preprocess("electricity")
+
+    # making timestamp as datetime and getting relevant columns
+    electricity["timestamp"] = pd.to_datetime(electricity["timestamp"])
+    cols = [i for i in electricity.columns if i != "timestamp"]
+
+    # finding consumer added in 2013 and 2014
+    x = (electricity[cols] != float(0)).idxmax()
+    y = pd.DataFrame(electricity.loc[x, "timestamp"]).reset_index()
+    x = pd.DataFrame(x).reset_index().rename(columns = {0:"index","index":"consumer"})
+    df = y.drop_duplicates().merge(x, how = "inner", on = "index")
+    df = df[df["timestamp"].dt.year.isin([2013, 2014])] 
+
+    # removing consumers added in 2013 and 2014
+    consumers_13_14 = df["consumer"].values
+    electricity = electricity.drop(consumers_13_14, axis = 1)
+
+    # aggregating electricity consumption to compute daily
+    # consumption
+    electricity["date"] = electricity["timestamp"].dt.date
+    electricity = electricity.drop(["timestamp"], axis = 1)
+    electricity = electricity.groupby(by = ["date"]).sum()
+
+    # converting to numpy format
+    # for tslearn for clustering
+    if as_numpy == True:
+        a = electricity.values.T
+        a = np.expand_dims(a, axis = -1)
+        return a
+    
+    return electricity
