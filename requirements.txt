@@ -6,6 +6,8 @@ seaborn
 scipy
 sktime
 tslearn
+yellowbrick
+sklearn
 
 # for virtual environment
 virtualenv
