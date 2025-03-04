@@ -13,18 +13,24 @@ git checkout <branch-name>
 import preprocess # will create a folder __pycache__ (ignored by git)
 
 # for EDA
-df = preprocess.preprocess("electricity")
+electricity = preprocess.preprocess("electricity")
+temp = preprocess.preprocess("temperature")
+precip = preprocess.preprocess("precipitation")
+
+# for clustering
+electricity = preprocess.preprocess_modelling(as_numpy = True, clustered = False)
 
 # for modelling 
 # (set as_numpy = True if model needs numpy arrays as input)
-# (otherwise dataframe will returned)
-df = preprocess.preprocess_modelling(as_numpy = False)
-df = preprocess.preprocess("temperature")
-df = preprocess.preprocess("precipitation")
+# (otherwise dataframe will be returned)
+electricity = preprocess.preprocess_modelling(as_numpy = False, clustered = True)
+temp = preprocess.preprocess("temperature")
+precip = preprocess.preprocess("precipitation")
 ```
 Any other input to the function will result in ValueError!
 
-- If you use any new module from Python to do your work, please add it inside requirements.txt.
+- If you use any new module from Python, please add it inside requirements.txt.
+
 
 # Guidelines for pull request
 Before making a pull request, ensure the following requirements are fulfilled:

@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import json
 
 DATA_DIR = {
   "electricity": "data/LD2011_2014.txt",
@@ -56,7 +57,7 @@ def preprocess(dataset_name: str):
     
     return df
 
-def preprocess_modelling(as_numpy : bool):
+def preprocess_modelling(as_numpy : bool, clustered : bool):
 
     # reading the dataset
     electricity = preprocess("electricity")
@@ -81,6 +82,18 @@ def preprocess_modelling(as_numpy : bool):
     electricity["date"] = electricity["timestamp"].dt.date
     electricity = electricity.drop(["timestamp"], axis = 1)
     electricity = electricity.groupby(by = ["date"]).sum()
+
+    if clustered:
+        with open("clusters.json", "r") as f:
+            clusters = json.load(fp = f)
+            cluster_0 = clusters["0"]
+            cluster_1 = clusters["1"]
+            x = cluster_1
+
+            electricity["cluster_0"] = electricity[cluster_0].sum(axis = 1)
+            electricity["cluster_1"] = electricity[cluster_1].sum(axis = 1)
+            electricity = electricity.drop(cluster_0 + cluster_1, axis = 1)
+            
 
     # converting to numpy format
     # for tslearn for clustering
