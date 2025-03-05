@@ -34,10 +34,15 @@ def preprocess_weather(dataset_name: str):
 
     if dataset_name == "precipitation":
        df = df.rename(columns = {"Year": "year",
+                                 "Month": "month",
+                                 "Day": "day",
                                  "Precipitation (mm)": "precip"})
 
     # filter data for only 2011-2014
-    df = df[df["year"].isin(YEARS)]
+    df = df[df["year"].isin(YEARS)].reset_index(drop = True)
+
+    df["date"] = pd.to_datetime(df[["year", "month", "day"]])
+    df = df.drop(["year", "month", "day"], axis = 1)
 
     return df
 
@@ -57,7 +62,7 @@ def preprocess(dataset_name: str):
     
     return df
 
-def preprocess_modelling(as_numpy : bool, clustered : bool):
+def preprocess_modelling(as_numpy: bool, clustered: bool, stationary: bool ):
 
     # reading the dataset
     electricity = preprocess("electricity")
@@ -93,6 +98,9 @@ def preprocess_modelling(as_numpy : bool, clustered : bool):
             electricity["cluster_0"] = electricity[cluster_0].sum(axis = 1)
             electricity["cluster_1"] = electricity[cluster_1].sum(axis = 1)
             electricity = electricity.drop(cluster_0 + cluster_1, axis = 1)
+            if stationary:
+                electricity["cluster_0"] = electricity["cluster_0"].diff()
+                electricity["cluster_1"] = electricity["cluster_1"].diff()
             
 
     # converting to numpy format
