@@ -23,7 +23,7 @@ electricity = preprocess.preprocess_modelling(as_numpy = True, clustered = False
 # for modelling 
 # (set as_numpy = True if model needs numpy arrays as input)
 # (otherwise dataframe will be returned)
-electricity = preprocess.preprocess_modelling(as_numpy = False, clustered = True)
+electricity = preprocess.preprocess_modelling(as_numpy = False, clustered = True, stationary = True)
 temp = preprocess.preprocess("temperature")
 precip = preprocess.preprocess("precipitation")
 ```

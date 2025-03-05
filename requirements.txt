@@ -8,6 +8,8 @@ sktime
 tslearn
 yellowbrick
 sklearn
+statsmodels
+pprint
 
 # for virtual environment
 virtualenv
