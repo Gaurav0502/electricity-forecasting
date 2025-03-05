@@ -29,6 +29,21 @@ precip = preprocess.preprocess("precipitation")
 ```
 Any other input to the function will result in ValueError!
 
+- After training the model, store the MAPE for each split for each cluster.
+
+```py
+mape = {"cluster_0":[<mape metrics for each split>],
+        "cluster_1": [<mape metrics for each split>]}
+```
+
+- To obtain the boxplot for MAPE values for each cluster, use evaluation.py.
+
+```py
+import evaluation
+
+evaluation.plot_mape_boxplots(<"LSTM" OR "SARIMA" OR "Facebook Prophet">, mape)
+```
+
 - If you use any new module from Python, please add it inside requirements.txt.
 
 
