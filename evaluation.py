@@ -12,7 +12,7 @@ def plot_mape_boxplots(model: list, mape: dict):
     if not list(mape.keys()) == ["cluster_0", "cluster_1"]:
         raise ValueError("the dictionary input must have cluster_0 and cluster_1 as keys.")
     
-    if  not str(type(mape["cluster_0"])) == str(type(mape["cluster_0"])) == LIST_TYPE:
+    if  not str(type(mape["cluster_0"])) == str(type(mape["cluster_1"])) == LIST_TYPE:
         raise ValueError("dictionary values must a list of MAPE values.")
     
     with open("model-results", "w") as f: 

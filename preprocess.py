@@ -62,7 +62,7 @@ def preprocess(dataset_name: str):
     
     return df
 
-def preprocess_modelling(as_numpy: bool, clustered: bool, stationary: bool ):
+def preprocess_modelling(as_numpy: bool, clustered: bool, stationary=False):
 
     # reading the dataset
     electricity = preprocess("electricity")
