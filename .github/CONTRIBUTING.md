@@ -29,19 +29,16 @@ precip = preprocess.preprocess("precipitation")
 ```
 Any other input to the function will result in ValueError!
 
-- After training the model, store the MAPE for each split for each cluster.
-
+- To create your model, inherit the class Model from model.py.
 ```py
-mape = {"cluster_0":[<mape metrics for each split>],
-        "cluster_1": [<mape metrics for each split>]}
-```
+from model import Model
 
-- To obtain the boxplot for MAPE values for each cluster, use evaluation.py.
+class SARIMAX(Model):
+    def __init__(self, ...):
+        pass
 
-```py
-import evaluation
-
-evaluation.plot_mape_boxplots(<"LSTM" OR "SARIMA" OR "Facebook Prophet">, mape)
+    # ensure that you define the abstract functions
+    # train_model() and get_forecasts()
 ```
 
 - If you use any new module from Python, please add it inside requirements.txt.
@@ -65,11 +62,16 @@ git pull origin main
 ```bash
 .
 ├── README.md
+├── clustering.ipynb
+├── clusters.json
 ├── data
-│   ├── LD2011_2014.txt
-│   ├── lisbon_precip_2011-2014.csv
-│   └── lisbon_temp_2011-2014.csv
+│   ├── LD2011_2014.txt
+│   ├── lisbon_precip_2011-2014.csv
+│   └── lisbon_temp_2011-2014.csv
 ├── eda.ipynb
+├── model.py
+├── modelling.ipynb
 ├── preprocess.py
-├── requirements.txt
+└── requirements.txt
+
 ```
