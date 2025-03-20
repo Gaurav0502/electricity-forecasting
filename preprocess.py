@@ -101,7 +101,9 @@ def preprocess_modelling(as_numpy: bool, clustered: bool, stationary=False):
             if stationary:
                 electricity["cluster_0"] = electricity["cluster_0"].diff()
                 electricity["cluster_1"] = electricity["cluster_1"].diff()
-            
+    
+    if stationary:
+        electricity = electricity.diff()
 
     # converting to numpy format
     # for tslearn for clustering
