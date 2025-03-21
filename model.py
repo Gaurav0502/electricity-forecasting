@@ -33,12 +33,12 @@ class Model(ABC):
 
       # member variables
       self.trained_model = None
-      self.ts_train = 180
+      self.ts_train = 120 
       self.ts_test = 5
       self.MAX_IDX = len(data)
       self.forecasts = dict()
 
-   def __standardize(self, train, test):
+   def standardize(self, train, test):
       """
       Standardizes the train and test datasets based on the statistical properties of the train dataset.
 
@@ -86,7 +86,7 @@ class Model(ABC):
          test = self.data[test_idx[0]: test_idx[1]][[self.cluster]]
 
          # standardizing the train and test data
-         train, test = self.__standardize(train, test)
+         train, test = self.standardize(train, test)
 
          # training the model
          self.trained_model = self.train_model(train, train_idx)
@@ -99,7 +99,7 @@ class Model(ABC):
    
          # computing mape based on the in-cluster values
          test_np = test.values.flatten()
-         mape_by_forecast = np.abs((test_np - self.forecasts[split_id]["pred"])/(test_np))
+         mape_by_forecast = np.abs((test_np - self.forecasts[split_id]["pred"])/(test_np))*100
          self.forecasts[split_id]["mape_by_forecast"] = mape_by_forecast
 
          # next train-test split indices
@@ -126,6 +126,7 @@ class Model(ABC):
 
       # plotting th boxplot
       sns.boxplot(df, orient = 'h', log_scale = True)
+
       plt.xlabel("log(Mean Absolute Percentage Error)")
       plt.ylabel("The ith forecast")
       plt.title(f"MAPE for each forecast across different train-test windows ({self.cluster})")
@@ -168,19 +169,19 @@ class Model(ABC):
                   test_start, test_end = self.forecasts[j]["test_date_range"]
                   train = l[[i]][train_start:train_end]
                   test = l[[i]][test_start:test_end]
-                  train, test = self.__standardize(train, test)
+                  train, test = self.standardize(train, test)
 
                   # computing and storing the MAPE
-                  m = mean_absolute_percentage_error(test, self.forecasts[j]["pred"])
-                  mape.append(min(m, 100))
+                  m = mean_absolute_percentage_error(test, self.forecasts[j]["pred"])*100
+                  mape.append(m)
                
                t.append(mape)
             
 
-            mape_ = dict(zip(cluster[0:num_clients], t))
+            self.mape_ = dict(zip(cluster[0:num_clients], t))
 
             # plotting the boxplot
-            sns.boxplot(pd.DataFrame.from_dict(mape_, orient="columns"),
+            sns.boxplot(pd.DataFrame.from_dict(self.mape_, orient="columns"),
                         log_scale=True, orient='h')
 
             plt.xlabel("log(Mean Absolute Percentage Error)")
