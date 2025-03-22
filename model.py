@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 # a model template for standardized evaluation
 # of forecasts
 class Model(ABC):
-   def __init__(self, data, cluster: str, window_stride = 28):
+   def __init__(self, data, cluster: str, start_idx = 0, window_stride = 28):
       """
          The constructor for the abstract class Model for standardize evaluation
 
@@ -30,11 +30,12 @@ class Model(ABC):
       self.data = data
       self.cluster = cluster
       self.ts_window_stride = window_stride
+      self.start_idx = start_idx
 
       # member variables
       self.trained_model = None
       self.ts_train = 182
-      self.ts_test = 6
+      self.ts_test = 5
       self.MAX_IDX = len(data)
       self.forecasts = dict()
       self.scaler = None
@@ -172,10 +173,15 @@ class Model(ABC):
                   # getting and standardizing the train and test data
                   train_start, train_end = self.forecasts[j]["train_date_range"]
                   test_start, test_end = self.forecasts[j]["test_date_range"]
-                  train = l[[i]][train_start:train_end]
-                  test = l[[i]][test_start:test_end]
-                  train, test = self.standardize(train, test)
+                  train = l[self.start_idx:][[i]][train_start:train_end]
+                  test = l[self.start_idx:][[i]][test_start:test_end]
 
+                  if len(test) != self.ts_test:
+                     continue
+
+                  train, test = self.standardize(train, test)
+                     
+                  test[test == 0] = 1e18
                   # computing and storing the MAPE
                   m = mean_absolute_percentage_error(test, self.forecasts[j]["pred"])*100
                   mape.append(m)
