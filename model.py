@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_percentage_error
 import preprocess
+import datetime
 
 import json
 from abc import ABC, abstractmethod
@@ -40,7 +41,6 @@ class Model(ABC):
       self.MAX_IDX = len(data)
       self.forecasts = dict()
       self.scaler = None
-      self.size = [181, 152]
 
    def standardize(self, train, test):
       """
@@ -164,6 +164,9 @@ class Model(ABC):
             l = preprocess.preprocess_modelling(as_numpy = False, 
                                                 clustered = False, 
                                                 stationary = False)
+            
+            if self.cluster != 'cluster_0':
+               l = l.loc[datetime.date(2012, 1, 1):,:]
             
             # computing MAPE based on each client in the cluster
             # for every train-test window
