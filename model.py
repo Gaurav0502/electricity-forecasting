@@ -33,8 +33,8 @@ class Model(ABC):
 
       # member variables
       self.trained_model = None
-      self.ts_train = 120 
-      self.ts_test = 5
+      self.ts_train = 182
+      self.ts_test = 6
       self.MAX_IDX = len(data)
       self.forecasts = dict()
 
