@@ -62,7 +62,7 @@ def preprocess(dataset_name: str):
     
     return df
 
-def preprocess_modelling(as_numpy: bool, clustered: bool, stationary=False):
+def preprocess_modelling(as_numpy = False, clustered = False, stationary = False):
 
     # reading the dataset
     electricity = preprocess("electricity")
@@ -91,16 +91,10 @@ def preprocess_modelling(as_numpy: bool, clustered: bool, stationary=False):
     if clustered:
         with open("clusters.json", "r") as f:
             clusters = json.load(fp = f)
-            cluster_0 = clusters["0"]
-            cluster_1 = clusters["1"]
-            x = cluster_1
-
-            electricity["cluster_0"] = electricity[cluster_0].sum(axis = 1)
-            electricity["cluster_1"] = electricity[cluster_1].sum(axis = 1)
-            electricity = electricity.drop(cluster_0 + cluster_1, axis = 1)
-            if stationary:
-                electricity["cluster_0"] = electricity["cluster_0"].diff()
-                electricity["cluster_1"] = electricity["cluster_1"].diff()
+            for cluster in clusters:
+                electricity["cluster_" + str(cluster)] = electricity[clusters[cluster]].sum(axis = 1)
+            electricity = electricity.drop([i for i in electricity.columns if "cluster" not in i], 
+                                           axis = 1)
     
     if stationary:
         electricity = electricity.diff()
