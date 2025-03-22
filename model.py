@@ -38,6 +38,8 @@ class Model(ABC):
       self.ts_test = 5
       self.MAX_IDX = len(data)
       self.forecasts = dict()
+      self.scaler = None
+      self.size = [181, 152]
 
    def standardize(self, train, test):
       """
@@ -51,17 +53,20 @@ class Model(ABC):
          - The train dataset standardized based on the statistical properties of the train dataset
          - The test dataset standardized based on the statistical properties of the train dataset
       """
-      scaler = StandardScaler()
+      self.scaler = StandardScaler()
 
-      train_ = pd.DataFrame(scaler.fit_transform(train), 
+      train_ = pd.DataFrame(self.scaler.fit_transform(train), 
                             columns=train.columns,
                             index = train.index)
 
-      test_ = pd.DataFrame(scaler.transform(test), 
+      test_ = pd.DataFrame(self.scaler.transform(test), 
                            columns=test.columns,
                            index = test.index)
       
       return train_, test_
+
+   def destandardize(self, data_st):
+      return self.scaler.inverse_transform(data_st)
    
    # an abstract method for training the required model
    @abstractmethod
