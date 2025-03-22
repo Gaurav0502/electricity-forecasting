@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 # a model template for standardized evaluation
 # of forecasts
 class Model(ABC):
-   def __init__(self, data, cluster: str, window_stride = 28):
+   def __init__(self, data, cluster: str, window_stride = 28, ts_train = 182, ts_test = 6):
       """
          The constructor for the abstract class Model for standardize evaluation
 
@@ -22,6 +22,8 @@ class Model(ABC):
             data: the actual time series that needs to be predicted.
             cluster: the cluster data which needs to be used (cluster_1 or cluster_0).
             window_stride: the stride (in days) for moving the train-test window; defaults to 28 days.
+            ts_train: the train window size (in days)
+            ts_test: the test window size (in days)
 
          Returns:
             - An object of abstract class Model.
@@ -33,8 +35,8 @@ class Model(ABC):
 
       # member variables
       self.trained_model = None
-      self.ts_train = 182
-      self.ts_test = 6
+      self.ts_train = ts_train
+      self.ts_test = ts_test
       self.MAX_IDX = len(data)
       self.forecasts = dict()
       self.scaler = None
