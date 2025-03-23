@@ -38,6 +38,7 @@ class Model(ABC):
       self.ts_test = 5
       self.MAX_IDX = len(data)
       self.forecasts = dict()
+      self.forecasts_total_electricity = dict()
       self.scaler = None
       self.size = [181, 152]
 
@@ -133,7 +134,7 @@ class Model(ABC):
       # plotting th boxplot
       sns.boxplot(df, orient = 'h', log_scale = True)
 
-      plt.xlabel("log(Mean Absolute Percentage Error)")
+      plt.xlabel("Mean Absolute Percentage Error")
       plt.ylabel("The ith forecast")
       plt.title(f"MAPE for each forecast across different train-test windows ({self.cluster})")
       plt.show()
@@ -195,11 +196,82 @@ class Model(ABC):
             sns.boxplot(pd.DataFrame.from_dict(self.mape_, orient="columns"),
                         log_scale=True, orient='h')
 
-            plt.xlabel("log(Mean Absolute Percentage Error)")
+            plt.xlabel("Mean Absolute Percentage Error")
             plt.ylabel("Clients in the cluster")
             plt.title(f"MAPE for {num_clients} client across different train-test windows ({self.cluster})")
             plt.show()
                
+   # cross validates the model based on the train-test split moving windows
+   def cross_validate_total_consumption(self):
 
+      # initial split for train and test
+      train_idx = [365, 365 + self.ts_train]
+      test_idx = [365 + self.ts_train, 365 + self.ts_train + self.ts_test]
+
+      clusters = ["cluster_0", "cluster_1", "cluster_2", "cluster_3", "cluster_4"]
+
+      total_electricity_actual = self.data.sum(axis=1)
+
+      # continuing for 50 such splits
+      for split_id in range(50):
+         
+         total_preds = np.zeros(self.ts_test)   
+         for c in clusters:
+            # train and test data for the split
+            train = self.data[train_idx[0]: train_idx[1]][[c]]
+            test = self.data[test_idx[0]: test_idx[1]][[c]]
+
+            # standardizing the train and test data
+            train, test = self.standardize(train, test)
+
+            # training the model
+            self.cluster = c
+            self.trained_model = self.train_model(train, train_idx)
+
+            # getting the forecasts
+            preds = self.get_forecasts(test, test_idx)
+
+            preds_destd = self.destandardize(pd.DataFrame(data=preds.values)).flatten()
+
+            total_preds += preds_destd
+         
+         self.forecasts_total_electricity[split_id] = {"pred": list(total_preds),
+                                     "train_date_range": train_idx,
+                                     "test_date_range": test_idx}
+         
+         # computing mape based on the in-cluster values
+         test_np = total_electricity_actual[test_idx[0]: test_idx[1]].values.flatten()
+         mape_by_forecast = np.abs((test_np - self.forecasts_total_electricity[split_id]["pred"])/(test_np))*100
+         self.forecasts_total_electricity[split_id]["mape_by_forecast"] = mape_by_forecast
+
+         # next train-test split indices
+         train_idx = [train_idx[0] + self.ts_window_stride, 
+                     min(train_idx[1] + self.ts_window_stride, 
+                        self.MAX_IDX)]
+         test_idx = [test_idx[0] + self.ts_window_stride, 
+                     min(test_idx[1] + self.ts_window_stride, 
+                        self.MAX_IDX)]
+         
+         # breaks the loop if test data indices go beyond the dataset
+         if test_idx[0] > len(self.data):
+            break
+   
+   # plots the MAPE for each forecast in the form of a boxplot
+   def mape_boxplot_by_step_total_electricity(self):
+
+      # getting the relevant data
+      t = dict()
+      for i in self.forecasts_total_electricity:
+         t[i] = self.forecasts_total_electricity[i]["mape_by_forecast"]
+
+      df = pd.DataFrame.from_dict(t, orient = "index")
+
+      # plotting th boxplot
+      sns.boxplot(df, orient = 'h', log_scale = False)
+
+      plt.xlabel("Mean Absolute Percentage Error")
+      plt.ylabel("The ith forecast")
+      plt.title("MAPE for each forecast (on total electricity) across different train-test windows")
+      plt.show()
     
     
