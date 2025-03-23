@@ -53,20 +53,20 @@ class Model(ABC):
          - The train dataset standardized based on the statistical properties of the train dataset
          - The test dataset standardized based on the statistical properties of the train dataset
       """
-      self.scaler = StandardScaler()
+      scaler = StandardScaler()
 
-      train_ = pd.DataFrame(self.scaler.fit_transform(train), 
+      train_ = pd.DataFrame(scaler.fit_transform(train), 
                             columns=train.columns,
                             index = train.index)
 
-      test_ = pd.DataFrame(self.scaler.transform(test), 
+      test_ = pd.DataFrame(scaler.transform(test), 
                            columns=test.columns,
                            index = test.index)
       
-      return train_, test_
+      return scaler, train_, test_
 
-   def destandardize(self, data_st):
-      return self.scaler.inverse_transform(data_st)
+   def destandardize(self, data_st, scaler):
+      return scaler.inverse_transform(data_st)
    
    # an abstract method for training the required model
    @abstractmethod
@@ -87,12 +87,14 @@ class Model(ABC):
 
       # continuing for 50 such splits
       for split_id in range(50):
+         if test_idx[0] == test_idx[1]:
+            break
          # train and test data for the split
          train = self.data[train_idx[0]: train_idx[1]][[self.cluster]]
          test = self.data[test_idx[0]: test_idx[1]][[self.cluster]]
 
          # standardizing the train and test data
-         train, test = self.standardize(train, test)
+         self.scaler, train, test = self.standardize(train, test)
 
          # training the model
          self.trained_model = self.train_model(train, train_idx)
@@ -121,21 +123,36 @@ class Model(ABC):
             break
    
    # plots the MAPE for each forecast in the form of a boxplot
-   def mape_boxplot_by_step(self):
+   def mape_boxplot_by_step(self, models):
 
-      # getting the relevant data
-      t = dict()
+      clusters = ["cluster_"+str(i) for i in range(5)]
+      total_consump = dict()
       for i in self.forecasts:
-         t[i] = self.forecasts[i]["mape_by_forecast"]
+
+         total_preds = np.zeros(self.ts_test)
+         for c in clusters:
+
+            pred = self.destandardize(np.array(models[int(c[-1])].forecasts[i]["pred"]).reshape(-1,1),
+                                      models[int(c[-1])].scaler).flatten()
+            total_preds += pred
+
+         start,end = self.forecasts[i]["test_date_range"]
+         test_np = self.data[start:end].sum(axis = 1).values.flatten()
+         mape_by_forecast = np.abs((test_np - total_preds)/(test_np))*100
+         total_consump[i] = mape_by_forecast
+
+      t = dict()
+      for i in total_consump:
+         t[i] = total_consump[i]
 
       df = pd.DataFrame.from_dict(t, orient = "index")
 
       # plotting th boxplot
-      sns.boxplot(df, orient = 'h', log_scale = True)
+      sns.boxplot(df, orient = 'h', log_scale = False)
 
-      plt.xlabel("log(Mean Absolute Percentage Error)")
+      plt.xlabel("Mean Absolute Percentage Error")
       plt.ylabel("The ith forecast")
-      plt.title(f"MAPE for each forecast across different train-test windows ({self.cluster})")
+      plt.title("MAPE for each forecast (on total electricity) across different train-test windows")
       plt.show()
    
    # Plotting the MAPE as a boxplot for each client
@@ -179,7 +196,7 @@ class Model(ABC):
                   if len(test) != self.ts_test:
                      continue
 
-                  train, test = self.standardize(train, test)
+                  _, train, test = self.standardize(train, test)
                      
                   test[test == 0] = 1e18
                   # computing and storing the MAPE
@@ -191,8 +208,9 @@ class Model(ABC):
 
             self.mape_ = dict(zip(cluster[0:num_clients], t))
 
+            self.d = pd.DataFrame.from_dict(self.mape_, orient="columns")
             # plotting the boxplot
-            sns.boxplot(pd.DataFrame.from_dict(self.mape_, orient="columns"),
+            sns.boxplot(self.d,
                         log_scale=True, orient='h')
 
             plt.xlabel("log(Mean Absolute Percentage Error)")
