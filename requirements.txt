@@ -10,6 +10,9 @@ yellowbrick
 sklearn
 statsmodels
 pprint
+tensorflow
+keras
+prophet
 
 # for virtual environment
 virtualenv

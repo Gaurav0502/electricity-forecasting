@@ -106,4 +106,4 @@ def preprocess_modelling(as_numpy = False, clustered = False, stationary = False
         a = np.expand_dims(a, axis = -1)
         return a
     
-    return electricity
+    return electricity/4
