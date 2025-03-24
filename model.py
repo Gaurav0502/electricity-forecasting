@@ -107,6 +107,7 @@ class Model(ABC):
    
          # computing mape based on the in-cluster values
          test_np = test.values.flatten()
+
          mape_by_forecast = np.abs((test_np - self.forecasts[split_id]["pred"])/(test_np))*100
          self.forecasts[split_id]["mape_by_forecast"] = mape_by_forecast
 
@@ -121,7 +122,7 @@ class Model(ABC):
          # breaks the loop if test data indices go beyond the dataset
          if test_idx[0] > len(self.data):
             break
-   
+
    # plots the MAPE for each forecast in the form of a boxplot
    def mape_boxplot_by_step(self, models):
 
