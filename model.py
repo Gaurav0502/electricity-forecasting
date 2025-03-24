@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.metrics import mean_absolute_percentage_error
 import preprocess
 
@@ -170,6 +170,7 @@ class Model(ABC):
       """
       
       t = []
+      self.s = []
       with open("clusters.json", "r") as f:
             
             # extracting the individual clients in the cluster
@@ -199,8 +200,11 @@ class Model(ABC):
                   _, train, test = self.standardize(train, test)
                      
                   test[test == 0] = 1e18
+
+                  self.s.append(test)
                   # computing and storing the MAPE
-                  m = mean_absolute_percentage_error(test, self.forecasts[j]["pred"])*100
+                  m = mean_absolute_percentage_error(self.destandardize(test.values.flatten().reshape(-1,1), self.scaler), 
+                                                     self.destandardize(np.array(self.forecasts[j]["pred"]).reshape(-1,1), self.scaler))*100
                   mape.append(m)
                
                t.append(mape)
