@@ -107,6 +107,7 @@ class Model(ABC):
    
          # computing mape based on the in-cluster values
          test_np = test.values.flatten()
+
          mape_by_forecast = np.abs((test_np - self.forecasts[split_id]["pred"])/(test_np))*100
          self.forecasts[split_id]["mape_by_forecast"] = mape_by_forecast
 
@@ -122,8 +123,25 @@ class Model(ABC):
          if test_idx[0] > len(self.data):
             break
    
+   def mape_boxplot_by_step(self):
+
+      # getting the relevant data
+      t = dict()
+      for i in self.forecasts:
+         t[i] = self.forecasts[i]["mape_by_forecast"]
+
+      df = pd.DataFrame.from_dict(t, orient = "index")
+
+      # plotting th boxplot
+      sns.boxplot(df, orient = 'h', log_scale = True)
+
+      plt.xlabel("log(Mean Absolute Percentage Error)")
+      plt.ylabel("The ith forecast")
+      plt.title(f"MAPE for each forecast across different train-test windows ({self.cluster})")
+      plt.show()
+
    # plots the MAPE for each forecast in the form of a boxplot
-   def mape_boxplot_by_step(self, models):
+   def mape_boxplot_by_step_(self, models):
 
       clusters = ["cluster_"+str(i) for i in range(5)]
       total_consump = dict()
